@@ -1,0 +1,65 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Used for migrations
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String      @id @db.Uuid // Matches Supabase auth.users.id
+  email            String      @unique
+  fcmToken         String?
+  subscriptionTier Tier        @default(BASIC)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  alerts           Alert[]
+}
+
+enum Tier {
+  BASIC
+  PRO
+  ELITE
+}
+
+model Alert {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String      @db.Uuid
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  market          MarketType
+  symbol          String      // e.g. "BTCUSDT", "EURUSD"
+  timeframe       String?     // "M1", "H1", "D1" etc. (for indicators/candles)
+  
+  alertType       AlertType
+  condition       Json        // E.g. { "indicator": "RSI", "operator": ">", "value": 70 }
+  
+  triggerMode     TriggerMode @default(EACH_TICK)
+  isRecurring     Boolean     @default(false)
+  isActive        Boolean     @default(true)
+  
+  lastTriggeredAt DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([symbol, isActive])
+}
+
+enum MarketType {
+  FOREX
+  CRYPTO
+  SYNTHETIC
+}
+
+enum AlertType {
+  PRICE
+  INDICATOR
+  CANDLE
+}
+
+enum TriggerMode {
+  EACH_TICK
+  CANDLE_CLOSE
+}
