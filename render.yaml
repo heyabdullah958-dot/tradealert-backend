@@ -21,3 +21,6 @@ services:
   - type: keyvalue
     name: tradealert-redis
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
