@@ -8,18 +8,26 @@ export class RedisService implements OnModuleDestroy {
   public readonly client: Redis;
 
   constructor(configService: ConfigService) {
-    const host = configService.get<string>('REDIS_HOST') || 'localhost';
-    const port = configService.get<number>('REDIS_PORT') || 6379;
-    const password = configService.get<string>('REDIS_PASSWORD');
+    const redisUrl = configService.get<string>('REDIS_URL');
 
-    this.logger.log(`Connecting to Redis at ${host}:${port}...`);
+    if (redisUrl) {
+      this.logger.log(`Connecting to Redis using URL...`);
+      this.client = new Redis(redisUrl, {
+        maxRetriesPerRequest: null, // Required by BullMQ
+      });
+    } else {
+      const host = configService.get<string>('REDIS_HOST') || 'localhost';
+      const port = configService.get<number>('REDIS_PORT') || 6379;
+      const password = configService.get<string>('REDIS_PASSWORD');
 
-    this.client = new Redis({
-      host,
-      port,
-      password: password || undefined,
-      maxRetriesPerRequest: null, // Required by BullMQ
-    });
+      this.logger.log(`Connecting to Redis at ${host}:${port}...`);
+      this.client = new Redis({
+        host,
+        port,
+        password: password || undefined,
+        maxRetriesPerRequest: null, // Required by BullMQ
+      });
+    }
 
     this.client.on('connect', () => {
       this.logger.log('Successfully connected to Redis');
