@@ -14,11 +14,10 @@ services:
         value: aUqyhR5BHv+PLijLjGyHLS9thT/Y/gEedlm8OlCj23ZHxqy9IuVbPlfCp+G4Ah0MW4gCSI2tjoJinux4VUWDhw==
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: tradealert-redis
           property: connectionString
 
-redis:
-  - name: tradealert-redis
+  - type: keyvalue
+    name: tradealert-redis
     plan: free
-    ipAllowList: []
