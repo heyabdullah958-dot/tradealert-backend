@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: tradealert-backend
+    env: node
+    plan: free
+    buildCommand: npm run build && npx prisma migrate deploy
+    startCommand: node dist/main
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres.yfzcxkxtxuwwnegpcjqh:%3F%25%21An%23.%24Y%2A2kD4q@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
+      - key: DIRECT_URL
+        value: postgresql://postgres.yfzcxkxtxuwwnegpcjqh:%3F%25%21An%23.%24Y%2A2kD4q@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres
+      - key: SUPABASE_JWT_SECRET
+        value: aUqyhR5BHv+PLijLjGyHLS9thT/Y/gEedlm8OlCj23ZHxqy9IuVbPlfCp+G4Ah0MW4gCSI2tjoJinux4VUWDhw==
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: tradealert-redis
+          property: connectionString
+
+redis:
+  - name: tradealert-redis
+    plan: free
+    ipAllowList: []
